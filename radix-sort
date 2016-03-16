@@ -1,0 +1,152 @@
+/*
+*Radix-Sort
+*author:Bowen
+*/
+
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
+
+using namespace std;
+using std::vector;
+
+typedef struct node
+{
+    int element;
+    struct node *next;
+}KeyNode;
+
+//Obtain the highest digit of the input numbers
+int maxBit(vector<int>TheArray)
+{
+    int theMaxBit = -1;
+    size_t len=TheArray.size();
+    for(size_t i=0; i<len; i++)
+    {
+        int tempBitCount = (int)(log10(TheArray[i])+1);
+        if( tempBitCount > theMaxBit){
+            theMaxBit = tempBitCount;
+        }
+    }
+    return theMaxBit;
+}
+
+//Obtain the Nth of a number
+int bitNum(int inputNum, int n)
+{
+    int power = (int)pow(10, n);
+    return (inputNum - inputNum/power*power)*10/power;
+}
+
+//Radix Sort
+void radixSort(vector<int>inputVec, int theMaxBit)
+{
+    KeyNode bucket[10], *tempCell;
+
+    //Start from the single digit
+    int len = inputVec.size();
+    int bit = 0;
+    for(int i=1; i<=theMaxBit; i++)
+    {
+        //Initialize the "buckets"
+        for(int k=0; k<10; k++)
+        {
+            bucket[k].element=-1;
+            bucket[k].next=0;
+        }
+        cout<<"Start the"<<i<<"th Sort: "<<endl;
+        for(int vecN=0; vecN<len; vecN++)
+        {
+            bit = bitNum(inputVec.at(vecN), i);
+            //When the bucket is empty
+            if(bucket[bit].element == -1 && bucket[bit].next == 0){
+                bucket[bit].element = inputVec.at(vecN);
+            }
+            else if(bucket[bit].element != -1 && bucket[bit].next == 0){
+                bucket[bit].next = (node *)malloc(sizeof(struct node));
+                tempCell = bucket[bit].next;
+                tempCell->element = inputVec.at(vecN);
+                tempCell->next = NULL;
+            }
+            else{
+                tempCell = bucket[bit].next;
+                while(tempCell->next != NULL){
+                    tempCell = tempCell->next;
+                }
+                tempCell->next = (node *)malloc(sizeof(struct node));
+                tempCell = tempCell->next;
+                tempCell->element = inputVec.at(vecN);
+                tempCell->next = NULL;
+            }
+        }
+
+        //output the numbers into the vector
+        int countOfVec = 0, temp = 0;
+        KeyNode *cell1, *cell2;
+        for(int NBucket=0; NBucket<10; NBucket++)
+        {
+            if(bucket[NBucket].element == -1 && bucket[NBucket].next == 0){
+                continue;
+            }
+            else if(bucket[NBucket].element != -1 && bucket[NBucket].next == 0){
+                inputVec[countOfVec++] = bucket[NBucket].element;
+            }
+            else{
+                cell1 = &bucket[NBucket];
+                cell2 = &bucket[NBucket];
+                while(cell1 != 0)
+                {
+                    while(cell2 != 0)
+                    {
+                        if(cell1->element > cell2->element){
+                            temp = cell1->element;
+                            cell1->element = cell2->element;
+                            cell2->element = temp;
+                        }
+                        cell2 = cell2->next;
+                    }
+                    cell2 = cell1->next;
+                    cell1 = cell1->next;
+                }
+                cell1 = &bucket[NBucket];
+                while(cell1 != 0)
+                {
+                    inputVec[countOfVec++] = cell1->element;
+                    cell1 = cell1->next;
+                }
+            }
+        }
+        cout<<"The"<<i<<"th sort result： "<<endl;
+        for(int qq=0; qq<len; qq++){
+            cout<<inputVec[qq]<<"; ";
+        }
+        cout<<endl;
+    }
+    cout<<endl;
+    cout<<"End Sort"<<endl;
+}
+
+int main()
+{
+    vector<int>ComparedVec;
+    int theMaxBit = 0;
+    /*
+    int myarray[] = {0,64,8,216,512,27,729,1,343,125};
+    for(int j=0; j<10; j++)
+    {
+        ComparedVec.push_back(myarray[j]);
+    }
+    */
+    srand(time(NULL));
+    for(int j=0; j<15; j++)
+    {
+        ComparedVec.push_back(rand()%181);
+    }
+    theMaxBit = maxBit(ComparedVec);
+    radixSort(ComparedVec, theMaxBit);
+
+    vector<int>().swap(ComparedVec);
+    return 0;
+}
